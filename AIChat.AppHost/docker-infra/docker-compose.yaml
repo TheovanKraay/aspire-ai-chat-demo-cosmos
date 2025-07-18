@@ -51,7 +51,6 @@ services:
       ASPNETCORE_FORWARDEDHEADERS_ENABLED: "true"
       HTTP_PORTS: "8004"
       ConnectionStrings__llm: "AccessKey=${OPENAI_API_KEY};Model=gpt-4o;Provider=OpenAI"
-      #ConnectionStrings__llm: "openaikey=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"
       ConnectionStrings__conversations: "Host=pg;Port=5432;Username=postgres;Password=${PG_PASSWORD};Database=conversations"
       ConnectionStrings__cache: "cache:6379,password=${CACHE_PASSWORD}"
       OTEL_EXPORTER_OTLP_ENDPOINT: "http://dashboard:18889"

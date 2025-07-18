@@ -6,7 +6,7 @@ public static class ModelExtensions
         return builder.CreateResourceBuilder(model);
     }
 
-/*    public static IResourceBuilder<AIModel> RunAsOllama(this IResourceBuilder<AIModel> builder, string model, Action<IResourceBuilder<OllamaResource>>? configure = null)
+    public static IResourceBuilder<AIModel> RunAsOllama(this IResourceBuilder<AIModel> builder, string model, Action<IResourceBuilder<OllamaResource>>? configure = null)
     {
         if (builder.ApplicationBuilder.ExecutionContext.IsRunMode)
         {
@@ -24,7 +24,7 @@ public static class ModelExtensions
         }
 
         return builder;
-    }*/
+    }
 
     public static IResourceBuilder<AIModel> RunAsOpenAI(this IResourceBuilder<AIModel> builder, string modelName, Func<IDistributedApplicationBuilder, IResourceBuilder<ParameterResource>> addApiKey)
     {

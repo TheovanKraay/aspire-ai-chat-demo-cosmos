@@ -43,10 +43,17 @@ public static class ChatClientExtensions
 
     private static ChatClientBuilder AddOllamaClient(this IHostApplicationBuilder builder, string connectionName, ChatClientConnectionInfo connectionInfo)
     {
+        // Manually configure the named HttpClient for Ollama
+        builder.Services.AddHttpClient(connectionName, client =>
+        {
+            client.Timeout = TimeSpan.FromMinutes(5); // Or longer if needed
+        });
+
         return builder.AddOllamaApiClient(connectionName, settings =>
         {
             settings.SelectedModel = connectionInfo.SelectedModel;
         })
         .AddChatClient();
     }
+
 }

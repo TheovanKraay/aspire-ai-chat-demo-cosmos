@@ -1,5 +1,34 @@
 var builder = DistributedApplication.CreateBuilder(args);
 
+static bool SystemSupportsNvidiaGpu()
+{
+    try
+    {
+        var startInfo = new System.Diagnostics.ProcessStartInfo
+        {
+            FileName = "nvidia-smi",
+            Arguments = "-L",
+            RedirectStandardOutput = true,
+            RedirectStandardError = true,
+            UseShellExecute = false,
+            CreateNoWindow = true
+        };
+
+        using var process = System.Diagnostics.Process.Start(startInfo);
+        if (process == null) return false;
+
+        string output = process.StandardOutput.ReadToEnd();
+        process.WaitForExit();
+
+        return output.Contains("GPU");
+    }
+    catch
+    {
+        return false;
+    }
+}
+
+
 // Publish this as a Docker Compose application
 builder.AddDockerComposeEnvironment("env")
        .ConfigureComposeFile(file =>
@@ -11,14 +40,17 @@ builder.AddDashboard();
 
 // This is the AI model our application will use
 var model = builder.AddAIModel("llm")
-                   .RunAsOpenAI("gpt-4o", b => b.AddParameter("openaikey", secret: true))
+                   .RunAsOllama("tinyllama:chat", c =>
+                   {
+                       if (SystemSupportsNvidiaGpu())
+                       {
+                           c.WithGPUSupport();
+                       }
+
+                       c.WithLifetime(ContainerLifetime.Persistent);
+                   })
                    .PublishAsOpenAI("gpt-4o", b => b.AddParameter("openaikey", secret: true));
 
-// We use Postgres for our conversation history
-/*var db = builder.AddPostgres("pg")
-                .WithDataVolume(builder.ExecutionContext.IsPublishMode ? "pgvolume" : null)
-                .WithPgAdmin()
-                .AddDatabase("conversations");*/
 
 var db = builder.AddAzureCosmosDB("cosmos")
                            .RunAsPreviewEmulator(e => e.WithDataExplorer().WithDataVolume())
