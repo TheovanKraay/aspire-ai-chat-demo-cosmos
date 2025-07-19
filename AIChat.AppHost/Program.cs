@@ -1,32 +1,6 @@
+using AIChat.AppHost;
+
 var builder = DistributedApplication.CreateBuilder(args);
-
-static bool SystemSupportsNvidiaGpu()
-{
-    try
-    {
-        var startInfo = new System.Diagnostics.ProcessStartInfo
-        {
-            FileName = "nvidia-smi",
-            Arguments = "-L",
-            RedirectStandardOutput = true,
-            RedirectStandardError = true,
-            UseShellExecute = false,
-            CreateNoWindow = true
-        };
-
-        using var process = System.Diagnostics.Process.Start(startInfo);
-        if (process == null) return false;
-
-        string output = process.StandardOutput.ReadToEnd();
-        process.WaitForExit();
-
-        return output.Contains("GPU");
-    }
-    catch
-    {
-        return false;
-    }
-}
 
 
 // Publish this as a Docker Compose application
@@ -42,11 +16,7 @@ builder.AddDashboard();
 var model = builder.AddAIModel("llm")
                    .RunAsOllama("tinyllama:chat", c =>
                    {
-                       if (SystemSupportsNvidiaGpu())
-                       {
-                           c.WithGPUSupport();
-                       }
-
+                       c.WithGPUIfSupported();
                        c.WithLifetime(ContainerLifetime.Persistent);
                    })
                    .PublishAsOpenAI("gpt-4o", b => b.AddParameter("openaikey", secret: true));
